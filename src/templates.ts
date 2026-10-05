@@ -1,5 +1,6 @@
 import { hatPattern, type Gauge } from "./hat.ts";
-import { sweaterPattern } from "./sweater.ts";
+import { sweaterPattern, SIZES } from "./sweater.ts";
+import { gaugeOf, nearestYarn, YARN_WEIGHTS } from "./yarn.ts";
 import type { Chart } from "./chart.ts";
 import { dogSweaterPattern, scarfPattern, snoodPattern } from "./patterns.ts";
 
@@ -27,22 +28,41 @@ const NOTES = [
   "Gauge you enter is used as given, nothing is verified for you.",
 ];
 
+function materials(stitchTotal: number, g: Gauge): string[] {
+  const m = yarnMeters(stitchTotal, g);
+  const y = nearestYarn(g.stitchesPer10cm);
+  const skeins = Math.ceil(m / y.metersPer100g);
+  return [
+    `Yarn: about ${m} m, roughly ${skeins} x 100 g of ${y.name} weight (estimate, buy one spare)`,
+    `Needles: about ${y.needleMm} mm for ${y.name}, but use the size that gives ${g.stitchesPer10cm} stitches per 10 cm`,
+  ];
+}
+
 function result(p: { stitchTotal: number; finished: string[]; steps: string[]; table?: string[][]; chart?: Chart }, g: Gauge): Result {
   return {
     table: p.table,
     chart: p.chart,
     finished: p.finished,
-    materials: [`Yarn: about ${yarnMeters(p.stitchTotal, g)} m (estimate, plus a spare ball for safety)`, `Needles: size that gives ${g.stitchesPer10cm} stitches per 10 cm`],
+    materials: materials(p.stitchTotal, g),
     steps: p.steps,
     notes: NOTES,
   };
 }
+
+export interface Preset {
+  label: string;
+  values: Record<string, number>;
+}
+
+// Yarn weight buttons fill in the gauge for that weight.
+const yarnPresets: Preset[] = YARN_WEIGHTS.map((y) => ({ label: y.name, values: { st: y.stitchesPer10cm, rows: gaugeOf(y).rowsPer10cm } }));
 
 export interface Template {
   id: string;
   name: string;
   fields: Field[];
   build: (v: Record<string, number>) => Result;
+  presets: Preset[][]; // groups of buttons that fill in fields
 }
 
 const gaugeFields: Field[] = [
@@ -60,6 +80,7 @@ export const TEMPLATES: Template[] = [
       { key: "height", label: "Hat height, cm", initial: "22" },
       ...gaugeFields,
     ],
+    presets: [yarnPresets],
     build: (v) => result(hatPattern({ headCircumferenceCm: v.head, heightCm: v.height, gauge: gauge(v) }), gauge(v)),
   },
   {
@@ -70,6 +91,7 @@ export const TEMPLATES: Template[] = [
       { key: "height", label: "Height, cm", initial: "25" },
       ...gaugeFields,
     ],
+    presets: [yarnPresets],
     build: (v) => result(snoodPattern(v.circ, v.height, gauge(v)), gauge(v)),
   },
   {
@@ -80,6 +102,7 @@ export const TEMPLATES: Template[] = [
       { key: "length", label: "Length, cm", initial: "150" },
       ...gaugeFields,
     ],
+    presets: [yarnPresets],
     build: (v) => result(scarfPattern(v.width, v.length, gauge(v)), gauge(v)),
   },
   {
@@ -91,6 +114,7 @@ export const TEMPLATES: Template[] = [
       { key: "back", label: "Back length, cm", initial: "35" },
       ...gaugeFields,
     ],
+    presets: [yarnPresets],
     build: (v) => result(dogSweaterPattern(v.neck, v.chest, v.back, gauge(v)), gauge(v)),
   },
   {
@@ -102,6 +126,7 @@ export const TEMPLATES: Template[] = [
       { key: "st", label: "Gauge: stitches per 10 cm", initial: "12" },
       { key: "rows", label: "Gauge: rows per 10 cm", initial: "16" },
     ],
+    presets: [SIZES.map(([name, lo, hi, length]) => ({ label: name, values: { chest: (lo + hi) / 2, length } })), yarnPresets],
     build: (v) => result(sweaterPattern(v.chest, v.length, gauge(v)), gauge(v)),
   },
 ];
