@@ -24,11 +24,12 @@ def main():
     args = ap.parse_args()
     with (HERE / "manifest.csv").open(newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
+    shutil.rmtree(HERE / "dataset", ignore_errors=True)  # copies of photos deleted from raw must not survive
     counts = Counter()
     for row in rows:
         src = HERE / row["path"]
         if not src.exists():
-            print("missing file, skipped:", row["path"])
+            print("missing file, skipped:", row["path"].encode("ascii", "replace").decode())  # Windows consoles choke on some names
             continue
         part = split_of(row["path"], args.val)
         dest = HERE / "dataset" / part / row["label"] / src.name
