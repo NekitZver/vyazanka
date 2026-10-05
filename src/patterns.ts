@@ -1,6 +1,8 @@
 import type { Gauge } from "./hat.ts";
 
 export interface Pattern {
+  stitchTotal: number;
+  finished: string[];
   steps: string[];
 }
 
@@ -18,6 +20,8 @@ export function scarfPattern(widthCm: number, lengthCm: number, gauge: Gauge): P
   check([widthCm, lengthCm], gauge);
   const castOn = roundTo(stitches(widthCm, gauge), 2);
   return {
+    stitchTotal: castOn * rows(lengthCm, gauge),
+    finished: [`Width about ${widthCm} cm`, `Length about ${lengthCm} cm`],
     steps: [
       `Cast on ${castOn} stitches.`,
       `Knit every row (garter stitch) for ${rows(lengthCm, gauge)} rows, about ${lengthCm} cm.`,
@@ -30,6 +34,8 @@ export function snoodPattern(circumferenceCm: number, heightCm: number, gauge: G
   check([circumferenceCm, heightCm], gauge);
   const castOn = roundTo(stitches(circumferenceCm, gauge), 4); // multiple of 4 for 2x2 rib
   return {
+    stitchTotal: castOn * rows(heightCm, gauge),
+    finished: [`Circumference about ${circumferenceCm} cm`, `Height about ${heightCm} cm`],
     steps: [
       `Cast on ${castOn} stitches, join in the round.`,
       `Work k2, p2 rib for ${rows(heightCm, gauge)} rounds, about ${heightCm} cm.`,
@@ -50,7 +56,10 @@ export function dogSweaterPattern(neckCm: number, chestCm: number, backLengthCm:
   const straight = Math.max(0, total - collarRounds - increaseRounds * 2);
   const legHole = roundTo(chest * 0.15, 2);
   const legHoleRounds = Math.max(2, Math.round(straight * 0.4));
+  const stitchTotal = neck * collarRounds + ((neck + chest) / 2) * increaseRounds * 2 + chest * (straight + 4);
   return {
+    stitchTotal,
+    finished: [`Neck about ${neckCm} cm`, `Chest about ${chestCm} cm`, `Back length about ${backLengthCm} cm`],
     steps: [
       `Cast on ${neck} stitches, join in the round.`,
       `Rounds 1-${collarRounds}: rib (k2, p2).`,
