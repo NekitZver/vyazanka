@@ -4,3 +4,4 @@ dist
 ml/raw/
 ml/dataset/
 __pycache__/
+ml/model/
