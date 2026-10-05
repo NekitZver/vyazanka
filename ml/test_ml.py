@@ -2,6 +2,7 @@ import unittest
 
 from commons import allowed, safe_name
 from split import split_of
+from openverse import license_name
 from weknit import label_of, parse
 
 
@@ -33,6 +34,10 @@ class Tests(unittest.TestCase):
         self.assertEqual(page.title, "Снуд")
         self.assertEqual(page.links, ["https://weknit.ru/a/"])
         self.assertEqual(page.images, ["https://weknit.ru/i/1.jpg"])
+
+    def test_openverse_license_name_passes_the_commons_filter(self):
+        self.assertTrue(allowed(license_name({"license": "by-sa", "license_version": "4.0"})))
+        self.assertTrue(allowed(license_name({"license": "cc0", "license_version": "1.0"})))
 
 
 if __name__ == "__main__":

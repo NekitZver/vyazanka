@@ -16,3 +16,9 @@ Keep the license of every photo: if the app is ever published, photos from a sou
 # weknit.ru
 
 `python ml/weknit.py` reads the free pattern pages of weknit.ru (obeying robots.txt, 2 s between requests), labels each pattern by keywords in its title and saves its photos to `ml/raw/<label>/` with the page URL in `ml/manifest.csv`. The photos are copyrighted: use them only to train the local model, never commit or share them, and drop them (rows with `weknit` in the path) if the app is ever published. The page layout is guessed from the outside, so check the printed counts and review the photos by hand.
+
+# Openverse (more free photos)
+
+`python ml/openverse.py` searches Openverse (Flickr and other sites, CC0, public domain, CC BY and CC BY-SA only) and saves photos with source page, license and author in the manifest. Anonymous use is rate limited, and keyword search is noisy, so review the photos by hand. Not tried against the live API when it was written (the build sandbox cannot reach it): the first run on your machine is the test.
+
+Sources not used: Ravelry, Pinterest, Livemaster and similar sites forbid scraping or keep all rights, and forums rarely state a license. Photos from them would need the same "personal training use only" label as weknit.ru, so add them only deliberately.
