@@ -1,4 +1,6 @@
 import { hatPattern, type Gauge } from "./hat.ts";
+import { sweaterPattern } from "./sweater.ts";
+import type { Chart } from "./chart.ts";
 import { dogSweaterPattern, scarfPattern, snoodPattern } from "./patterns.ts";
 
 export interface Field {
@@ -12,6 +14,8 @@ export interface Result {
   materials: string[];
   steps: string[];
   notes: string[];
+  table?: string[][]; // size table, first row is the header
+  chart?: Chart;
 }
 
 // Rough yarn estimate: about 4 stitch widths of yarn per stitch in stockinette, plus 10%. Real use varies by about 25%.
@@ -23,8 +27,10 @@ const NOTES = [
   "Gauge you enter is used as given, nothing is verified for you.",
 ];
 
-function result(p: { stitchTotal: number; finished: string[]; steps: string[] }, g: Gauge): Result {
+function result(p: { stitchTotal: number; finished: string[]; steps: string[]; table?: string[][]; chart?: Chart }, g: Gauge): Result {
   return {
+    table: p.table,
+    chart: p.chart,
     finished: p.finished,
     materials: [`Yarn: about ${yarnMeters(p.stitchTotal, g)} m (estimate, plus a spare ball for safety)`, `Needles: size that gives ${g.stitchesPer10cm} stitches per 10 cm`],
     steps: p.steps,
@@ -86,5 +92,16 @@ export const TEMPLATES: Template[] = [
       ...gaugeFields,
     ],
     build: (v) => result(dogSweaterPattern(v.neck, v.chest, v.back, gauge(v)), gauge(v)),
+  },
+  {
+    id: "sweater",
+    name: "Cable sweater",
+    fields: [
+      { key: "chest", label: "Chest circumference, cm", initial: "92" },
+      { key: "length", label: "Body length, cm", initial: "66" },
+      { key: "st", label: "Gauge: stitches per 10 cm", initial: "12" },
+      { key: "rows", label: "Gauge: rows per 10 cm", initial: "16" },
+    ],
+    build: (v) => result(sweaterPattern(v.chest, v.length, gauge(v)), gauge(v)),
   },
 ];
