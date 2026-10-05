@@ -14,6 +14,8 @@ export interface HatPattern {
   castOn: number;
   bodyRounds: number;
   crownDecreaseRounds: number;
+  stitchTotal: number; // all stitches worked, for the yarn estimate
+  finished: string[];
   steps: string[];
 }
 
@@ -41,5 +43,7 @@ export function hatPattern({ headCircumferenceCm, heightCm, gauge, easePercent =
     `Crown: repeat 2 rounds ${decreaseRounds} times: round A decrease ${WEDGES} stitches evenly (k2tog), round B knit.`,
     `Cut yarn, pull through the remaining ${WEDGES} stitches, fasten off.`,
   ];
-  return { castOn, bodyRounds, crownDecreaseRounds: decreaseRounds, steps };
+  const finished = [`Circumference about ${Math.round(widthCm)} cm (stretches to ${headCircumferenceCm} cm)`, `Height about ${heightCm} cm`];
+  const stitchTotal = castOn * bodyRounds + (castOn * crownRounds) / 2; // the crown shrinks to nothing, so on average half the stitches
+  return { castOn, bodyRounds, crownDecreaseRounds: decreaseRounds, stitchTotal, finished, steps };
 }

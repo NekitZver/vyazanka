@@ -1,7 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { TEMPLATES } from "./src/templates";
+import { TEMPLATES, type Result } from "./src/templates";
 
 export default function App() {
   const [templateId, setTemplateId] = useState(TEMPLATES[0].id);
@@ -11,10 +11,10 @@ export default function App() {
   // typed values override defaults; defaults are per template so switching keeps what was typed
   const raw = (key: string, initial: string) => values[`${templateId}.${key}`] ?? initial;
 
-  let steps: string[] = [];
+  let result: Result | null = null;
   let error = "";
   try {
-    steps = template.build(
+    result = template.build(
       Object.fromEntries(template.fields.map((f) => [f.key, Number(raw(f.key, f.initial).replace(",", "."))])),
     );
   } catch {
@@ -47,18 +47,36 @@ export default function App() {
           </View>
         ))}
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        {steps.map((s, i) => (
-          <Text key={i} style={styles.step}>
-            {i + 1}. {s}
-          </Text>
-        ))}
+        {result ? (
+          <>
+            <Section title="Finished size" lines={result.finished} />
+            <Section title="Materials" lines={result.materials} />
+            <Section title="Instructions" lines={result.steps.map((s, i) => `${i + 1}. ${s}`)} />
+            <Section title="Notes" lines={result.notes} />
+          </>
+        ) : null}
       </ScrollView>
       <StatusBar style="auto" />
     </SafeAreaView>
   );
 }
 
+function Section({ title, lines }: { title: string; lines: string[] }) {
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {lines.map((l, i) => (
+        <Text key={i} style={styles.step}>
+          {l}
+        </Text>
+      ))}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  section: { gap: 4 },
+  sectionTitle: { fontSize: 18, fontWeight: "600", marginTop: 8 },
   root: { flex: 1, backgroundColor: "#fff" },
   content: { padding: 16, gap: 12 },
   tabs: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
