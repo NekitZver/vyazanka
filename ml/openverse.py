@@ -21,9 +21,9 @@ HERE = Path(__file__).parent
 QUERIES = {
     "hat": ["knitted hat", "knit beanie", "crochet hat"],
     "scarf": ["knitted scarf", "crochet scarf"],
-    "snood": ["knitted snood", "knitted cowl", "infinity scarf knit"],
+    "snood": ["knitted snood", "knitted cowl", "infinity scarf knit", "chunky knit cowl", "neck warmer knitted", "knit infinity scarf worn"],
     "sweater": ["hand knitted sweater", "cable knit sweater", "knitted pullover"],
-    "dog_sweater": ["dog in knitted sweater", "knitted dog sweater"],
+    "dog_sweater": ["dog in knitted sweater", "knitted dog sweater", "dog jumper", "pet sweater", "dog knit sweater", "dog wearing wool sweater", "crochet dog sweater"],
 }
 
 
