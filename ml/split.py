@@ -22,7 +22,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--val", type=float, default=0.15)
     args = ap.parse_args()
-    with (HERE / "manifest.csv").open(newline="") as f:
+    with (HERE / "manifest.csv").open(newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
     counts = Counter()
     for row in rows:
