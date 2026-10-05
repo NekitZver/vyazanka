@@ -39,6 +39,8 @@ def license_name(item: dict) -> str:
     code = item.get("license", "").lower()
     if code == "pdm":
         return "Public domain"
+    if code == "cc0":
+        return "CC0"
     return f"CC {code} {item.get('license_version', '')}".upper().strip()
 
 
