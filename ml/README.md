@@ -12,3 +12,7 @@ Keep the license of every photo: if the app is ever published, photos from a sou
 
 4. Look through `ml/raw/<label>/` and delete photos that do not show the item (generic categories such as Scarves, Sweaters and Dogs wearing clothes contain other things), then run `python ml/split.py` again.
 5. `pip install -r ml/requirements.txt`, then `python ml/train.py`. It fine-tunes MobileNetV3-small (on the GPU if torch finds one), prints validation accuracy per epoch and the per-class result of the best epoch, and writes `ml/model/knit.onnx` and `ml/model/labels.json` (ignored by git). Not run end to end yet when this was written: if it fails, the error is the bug report.
+
+# weknit.ru
+
+`python ml/weknit.py` reads the free pattern pages of weknit.ru (obeying robots.txt, 2 s between requests), labels each pattern by keywords in its title and saves its photos to `ml/raw/<label>/` with the page URL in `ml/manifest.csv`. The photos are copyrighted: use them only to train the local model, never commit or share them, and drop them (rows with `weknit` in the path) if the app is ever published. The page layout is guessed from the outside, so check the printed counts and review the photos by hand.

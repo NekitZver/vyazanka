@@ -2,6 +2,7 @@ import unittest
 
 from commons import allowed, safe_name
 from split import split_of
+from weknit import label_of, parse
 
 
 class Tests(unittest.TestCase):
@@ -23,6 +24,15 @@ class Tests(unittest.TestCase):
         self.assertEqual(first, [split_of(p, 0.15) for p in paths])
         share = first.count("val") / len(first)
         self.assertTrue(0.10 < share < 0.20, share)
+
+    def test_weknit_labels_and_page_parsing(self):
+        self.assertEqual(label_of("Свитер для собаки спицами"), "dog_sweater")
+        self.assertEqual(label_of("Шапка-бини спицами"), "hat")
+        self.assertIsNone(label_of("Плед из квадратов"))
+        page = parse('<title>Снуд</title><a href="/a/">x</a><img src="/i/1.jpg"><img src="/logo.png"><img src="/s.jpg" width="50">', "https://weknit.ru/p/")
+        self.assertEqual(page.title, "Снуд")
+        self.assertEqual(page.links, ["https://weknit.ru/a/"])
+        self.assertEqual(page.images, ["https://weknit.ru/i/1.jpg"])
 
 
 if __name__ == "__main__":
