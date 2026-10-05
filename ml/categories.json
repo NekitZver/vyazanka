@@ -1,8 +1,8 @@
 {
-  "_note": "Wikimedia Commons categories per label. Names are guesses and not verified; the fetcher prints categories that return no files, fix them here.",
-  "hat": ["Category:Knit caps", "Category:Beanies", "Category:Knitted hats"],
-  "scarf": ["Category:Knitted scarves", "Category:Scarves"],
+  "_note": "Wikimedia Commons categories per label, checked in a real run on 2026-10-05 (every category returns files). Generic ones (Scarves, Sweaters, Dogs wearing clothes) include items that are not knitted: review the photos by hand before training.",
+  "hat": ["Category:Knit caps", "Category:Bobble hats", "Category:Women with knit caps"],
+  "scarf": ["Category:Wool scarves", "Category:Crocheted scarves", "Category:Scarves"],
   "snood": ["Category:Snoods", "Category:Cowls"],
-  "sweater": ["Category:Knitted sweaters", "Category:Sweaters"],
-  "dog_sweater": ["Category:Dog clothing"]
+  "sweater": ["Category:Lusekofte", "Category:Fair Isle sweaters", "Category:Christmas jumpers", "Category:Sweaters"],
+  "dog_sweater": ["Category:Dog clothes", "Category:Dogs wearing clothes"]
 }
