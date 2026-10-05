@@ -21,13 +21,14 @@ START = "https://weknit.ru/besplatnye-opisaniya-vyazaniya/"
 UA = "vyazanka-dataset/0.1 (personal research, https://github.com/NekitZver/vyazanka)"
 LICENSE = "all rights reserved (weknit.ru), personal training use only"
 HERE = Path(__file__).parent
-# first match wins: dog before sweater, so "свитер для собаки" is a dog sweater
+# first match wins: dog before sweater, so "свитер для собаки" is a dog sweater; sweater before snood, because
+# "кокетка-хомут" (a yoke) appears in sweater names. Latin forms match the site's transliterated URLs (/sviter-.../).
 KEYWORDS = [
-    ("dog_sweater", r"собак|пес\b|песик|питомц"),
-    ("snood", r"снуд|хомут"),
-    ("scarf", r"шарф"),
-    ("hat", r"шапк|берет|ушанк|колпак"),
-    ("sweater", r"свитер|пуловер|джемпер|кофт|кардиган"),
+    ("dog_sweater", r"собак|пес\b|песик|питомц|sobak|pitomc"),
+    ("sweater", r"свитер|пуловер|джемпер|кофт|кардиган|sviter|pulover|dzhemper|koft|kardigan"),
+    ("snood", r"снуд|хомут|snud|homut|xomut"),
+    ("scarf", r"шарф|sharf"),
+    ("hat", r"шапк|берет|ушанк|колпак|shapk|beret|ushank|kolpak"),
 ]
 BAD_IMG = re.compile(r"logo|icon|avatar|banner|sprite|\.svg|\.gif|pixel", re.I)
 
@@ -87,9 +88,14 @@ def main():
     def get(url: str) -> bytes:
         if not robots.can_fetch(UA, url):
             raise PermissionError("robots.txt disallows " + url)
-        time.sleep(args.delay)
-        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=60) as r:
-            return r.read()
+        for attempt in range(3):  # the site sometimes times out on the TLS handshake
+            time.sleep(args.delay * (attempt + 1))
+            try:
+                with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=60) as r:
+                    return r.read()
+            except OSError:  # URLError and timeouts
+                if attempt == 2:
+                    raise
 
     # 1. listing pages -> pattern links whose slug or link text names one of our items
     candidates, todo, seen_listing = {}, [START], set()
@@ -104,7 +110,7 @@ def main():
                 continue
             if link.startswith(START) and re.search(r"page/\d+|[?&]page=|PAGEN", link):
                 todo.append(link)
-            elif label_of(urllib.parse.unquote(link)):
+            elif not link.startswith(START) and label_of(urllib.parse.unquote(link)):  # category listings are not patterns
                 candidates[link] = label_of(urllib.parse.unquote(link))
     print(f"{len(seen_listing)} listing pages, {len(candidates)} pattern links with a known item")
 

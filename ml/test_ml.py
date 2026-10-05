@@ -30,6 +30,8 @@ class Tests(unittest.TestCase):
         self.assertEqual(label_of("Свитер для собаки спицами"), "dog_sweater")
         self.assertEqual(label_of("Шапка-бини спицами"), "hat")
         self.assertIsNone(label_of("Плед из квадратов"))
+        self.assertEqual(label_of("https://weknit.ru/detskaya-shapka-ushanka-gora-fudzi-spiczami/"), "hat")
+        self.assertEqual(label_of("https://weknit.ru/product/sviter-yoke-homut-spiczami/"), "sweater")
         page = parse('<title>Снуд</title><a href="/a/">x</a><img src="/i/1.jpg"><img src="/logo.png"><img src="/s.jpg" width="50">', "https://weknit.ru/p/")
         self.assertEqual(page.title, "Снуд")
         self.assertEqual(page.links, ["https://weknit.ru/a/"])
