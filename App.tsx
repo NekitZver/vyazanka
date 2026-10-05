@@ -36,6 +36,19 @@ export default function App() {
             </Pressable>
           ))}
         </View>
+        {template.presets.map((group, i) => (
+          <View key={i} style={styles.tabs}>
+            {group.map((p) => (
+              <Pressable
+                key={p.label}
+                onPress={() => setValues((v) => ({ ...v, ...Object.fromEntries(Object.entries(p.values).map(([k, n]) => [`${templateId}.${k}`, String(n)])) }))}
+                style={styles.tab}
+              >
+                <Text>{p.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ))}
         {template.fields.map((f) => (
           <View key={f.key} style={styles.field}>
             <Text style={styles.label}>{f.label}</Text>
