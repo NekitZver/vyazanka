@@ -18,6 +18,12 @@ ALLOWED = re.compile(r"(cc0.*|public domain.*|pd.*|cc[ -]by(-sa)?([ -]\d.*)?)") 
 HERE = Path(__file__).parent
 
 
+def safe_name(page_id, url: str) -> str:
+    """File name from a thumbnail URL: no query string, no characters Windows rejects, unique per page."""
+    name = urllib.parse.unquote(urllib.parse.urlparse(url).path.rsplit("/", 1)[-1])
+    return f"{page_id}_" + re.sub(r'[<>:"/\\|?*]', "_", name)
+
+
 def allowed(license_name: str) -> bool:
     return bool(ALLOWED.fullmatch(license_name.lower().strip()))
 
@@ -29,7 +35,7 @@ def api(params: dict) -> dict:
 
 
 def list_files(category: str, limit: int):
-    """Yield (title, thumb_url, page_url, license, author) for image files in a category."""
+    """Yield (page_id, thumb_url, page_url, license, author) for image files in a category."""
     params = {
         "action": "query", "generator": "categorymembers", "gcmtitle": category, "gcmtype": "file",
         "gcmlimit": min(limit, 50), "prop": "imageinfo", "iiprop": "url|extmetadata|mime",
@@ -41,7 +47,7 @@ def list_files(category: str, limit: int):
             continue
         meta = info.get("extmetadata", {})
         yield (
-            page["title"], info.get("thumburl", ""), info.get("descriptionurl", ""),
+            page["pageid"], info.get("thumburl", ""), info.get("descriptionurl", ""),
             meta.get("LicenseShortName", {}).get("value", ""), meta.get("Artist", {}).get("value", ""),
         )
 
@@ -54,25 +60,25 @@ def main():
     manifest = HERE / "manifest.csv"
     seen = set()
     if manifest.exists():
-        with manifest.open(newline="") as f:
+        with manifest.open(newline="", encoding="utf-8") as f:
             seen = {row["source_url"] for row in csv.DictReader(f)}
     new_file = not manifest.exists()
-    with manifest.open("a", newline="") as f:
+    with manifest.open("a", newline="", encoding="utf-8") as f:
         out = csv.DictWriter(f, fieldnames=["path", "label", "source_url", "license", "author"])
         if new_file:
             out.writeheader()
         for label, cats in categories.items():
             for cat in cats:
                 found = 0
-                for title, thumb, page_url, lic, author in list_files(cat, args.limit):
+                for page_id, thumb, page_url, lic, author in list_files(cat, args.limit):
                     if not thumb or page_url in seen or not allowed(lic):
                         continue
-                    dest = HERE / "raw" / label / (Path(urllib.parse.unquote(thumb)).name)
+                    dest = HERE / "raw" / label / safe_name(page_id, thumb)
                     dest.parent.mkdir(parents=True, exist_ok=True)
                     req = urllib.request.Request(thumb, headers={"User-Agent": UA})
                     with urllib.request.urlopen(req, timeout=60) as r:
                         dest.write_bytes(r.read())
-                    out.writerow({"path": str(dest.relative_to(HERE)), "label": label, "source_url": page_url,
+                    out.writerow({"path": dest.relative_to(HERE).as_posix(), "label": label, "source_url": page_url,
                                   "license": lic, "author": author})
                     seen.add(page_url)
                     found += 1
