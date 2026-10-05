@@ -1,6 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import type { Chart } from "./src/chart";
 import { TEMPLATES, type Result } from "./src/templates";
 
 export default function App() {
@@ -50,7 +51,9 @@ export default function App() {
         {result ? (
           <>
             <Section title="Finished size" lines={result.finished} />
+            {result.table ? <SizeTable rows={result.table} /> : null}
             <Section title="Materials" lines={result.materials} />
+            {result.chart ? <ChartView chart={result.chart} /> : null}
             <Section title="Instructions" lines={result.steps.map((s, i) => `${i + 1}. ${s}`)} />
             <Section title="Notes" lines={result.notes} />
           </>
@@ -74,7 +77,64 @@ function Section({ title, lines }: { title: string; lines: string[] }) {
   );
 }
 
+function SizeTable({ rows }: { rows: string[][] }) {
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Sizes</Text>
+      {rows.map((r, i) => (
+        <View key={i} style={styles.tableRow}>
+          {r.map((c, j) => (
+            <Text key={j} style={[styles.cell, i === 0 && styles.bold]}>
+              {c}
+            </Text>
+          ))}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const SYMBOL = { k: "", p: "•", x: "✕" } as const;
+
+// Chart rows are numbered from the bottom, so draw the last row first.
+function ChartView({ chart }: { chart: Chart }) {
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Chart (8-row repeat, read right to left)</Text>
+      <ScrollView horizontal>
+        <View>
+          {chart.rows
+            .map((row, i) => (
+              <View key={i} style={styles.chartRow}>
+                <Text style={styles.rowNo}>{i + 1}</Text>
+                {[...row].reverse().map((s, j) => (
+                  <View key={j} style={[styles.chartCell, s !== "p" && styles.chartKnit]}>
+                    <Text style={styles.chartSymbol}>{SYMBOL[s]}</Text>
+                  </View>
+                ))}
+              </View>
+            ))
+            .reverse()}
+        </View>
+      </ScrollView>
+      {Object.entries(chart.legend).map(([k, v]) => (
+        <Text key={k} style={styles.step}>
+          {SYMBOL[k as keyof typeof SYMBOL] || "▢"} {v}
+        </Text>
+      ))}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  tableRow: { flexDirection: "row" },
+  cell: { flex: 1, fontSize: 15, paddingVertical: 2 },
+  bold: { fontWeight: "600" },
+  chartRow: { flexDirection: "row", alignItems: "center" },
+  rowNo: { width: 22, fontSize: 11, color: "#888" },
+  chartCell: { width: 20, height: 20, borderWidth: StyleSheet.hairlineWidth, borderColor: "#ccc", alignItems: "center", justifyContent: "center" },
+  chartKnit: { backgroundColor: "#e8dcf8" },
+  chartSymbol: { fontSize: 12, color: "#6a4cb0" },
   section: { gap: 4 },
   sectionTitle: { fontSize: 18, fontWeight: "600", marginTop: 8 },
   root: { flex: 1, backgroundColor: "#fff" },
